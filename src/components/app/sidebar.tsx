@@ -1,6 +1,6 @@
 "use client";
 
-import { Bookmark, LogOut, Moon, NotebookText, PanelLeft, Search, SquarePen, Sun, Trash, User } from "lucide-react";
+import { Bookmark, House, LogOut, Moon, NotebookText, PanelLeft, Search, SquarePen, Sun, Trash, User } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
@@ -42,7 +42,8 @@ export function Sidebar({ desktopOpen, mobileOpen, onClose, onNavigate, onSearch
       </div>
 
       <nav className="space-y-0.5 px-3">
-        <NavItem href="/" icon={<SquarePen className="size-5" />} label="New chat" onClick={onNavigate} />
+        <NavItem href="/" icon={<House className="size-5" />} label="Main menu" onClick={onNavigate} />
+        <NavItem href="/chat" icon={<SquarePen className="size-5" />} label="New chat" onClick={onNavigate} />
         <button type="button" onClick={onSearch} className={navClass(false)}>
           <Search className="size-5" />
           <span className="flex-1 text-left">Search chats</span>
@@ -134,7 +135,7 @@ function RecentChats({ onNavigate }: { onNavigate: () => void }) {
   function remove(id: string) {
     if (!window.confirm("Delete this chat? This can't be undone.")) return;
     update("chats", (list) => list.filter((c) => c.id !== id));
-    if (pathname === "/" && activeId === id) router.replace("/");
+    if (pathname === "/chat" && activeId === id) router.replace("/chat");
   }
 
   return (
@@ -142,11 +143,11 @@ function RecentChats({ onNavigate }: { onNavigate: () => void }) {
       <p className="px-2.5 pb-2 text-sm font-medium text-muted">Recent</p>
       <ul className="space-y-0.5">
         {sorted.map((chat) => {
-          const active = pathname === "/" && chat.id === activeId;
+          const active = pathname === "/chat" && chat.id === activeId;
           return (
             <li key={chat.id} className="group relative">
               <Link
-                href={`/?c=${chat.id}`}
+                href={`/chat?c=${chat.id}`}
                 onClick={onNavigate}
                 className={`flex items-center gap-2.5 rounded-lg py-2 pr-9 pl-2.5 text-[15px] text-ink transition hover:bg-hover ${
                   active ? "bg-hover font-medium" : ""

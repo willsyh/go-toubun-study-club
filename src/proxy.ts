@@ -1,7 +1,20 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { SESSION_COOKIE, verifySessionToken } from "@/lib/server/session";
 
-const APP_PATHS = ["/", "/notes", "/memory", "/account"];
+const APP_PATHS = [
+  "/",
+  "/chat",
+  "/notes",
+  "/memory",
+  "/account",
+  "/characters",
+  "/study",
+  "/read",
+  "/call",
+  "/language",
+  "/exams",
+  "/exams/drill",
+];
 const AUTH_PATHS = ["/login", "/signup"];
 
 /**
@@ -22,5 +35,20 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/", "/notes", "/memory", "/account", "/login", "/signup"],
+  matcher: [
+    "/",
+    "/chat",
+    "/notes",
+    "/memory",
+    "/account",
+    "/characters",
+    "/study",
+    "/read",
+    "/call",
+    "/language",
+    "/exams",
+    "/exams/drill",
+    "/login",
+    "/signup",
+  ],
 };

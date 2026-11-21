@@ -43,7 +43,7 @@ function SearchPanel({ onClose }: { onClose: () => void }) {
   }, [chats, query]);
 
   function openChat(id: string) {
-    router.push(`/?c=${id}`);
+    router.push(`/chat?c=${id}`);
     onClose();
   }
 

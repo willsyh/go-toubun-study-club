@@ -62,7 +62,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                     <PanelLeft className="size-5" />
                   </IconButton>
                   <Link
-                    href="/"
+                    href="/chat"
                     aria-label="New chat"
                     className="hidden size-10 items-center justify-center rounded-lg text-ink-soft hover:bg-hover lg:inline-flex"
                   >
