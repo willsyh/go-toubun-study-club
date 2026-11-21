@@ -16,7 +16,8 @@ import {
 } from "@/lib/local-store";
 import { createReply } from "@/lib/mock-tutor";
 import { setPref, usePref } from "@/lib/prefs";
-import { DEFAULT_TUTOR, TUTORS, getTutor, type Tutor, type TutorId } from "@/lib/tutors";
+import { DEFAULT_TUTOR, getTutor, type Tutor, type TutorId } from "@/lib/tutors";
+import { CharacterSelect } from "./character-select";
 import { Composer } from "./composer";
 
 const DISCLAIMER = "Answers can be wrong. Check anything important.";
@@ -38,6 +39,20 @@ function NewChat() {
   const router = useRouter();
   const tutorId = usePref<TutorId>("gt:tutor", DEFAULT_TUTOR);
   const tutor = getTutor(tutorId);
+  // Every new session starts on the character select; the last pick is preselected.
+  const [picking, setPicking] = useState(true);
+
+  if (picking) {
+    return (
+      <CharacterSelect
+        initial={tutor.id}
+        onStart={(id) => {
+          setPref("gt:tutor", id);
+          setPicking(false);
+        }}
+      />
+    );
+  }
 
   function start(text: string, attachments: Attachment[]) {
     const now = Date.now();
@@ -50,7 +65,7 @@ function NewChat() {
       updatedAt: now,
     };
     update("chats", (list) => [...list, chat]);
-    router.push(`/?c=${chat.id}`);
+    router.push(`/chat?c=${chat.id}`);
     scheduleReply(chat.id);
   }
 
@@ -62,44 +77,16 @@ function NewChat() {
           What do you want to learn?
         </h1>
         <p className="mt-2 text-center text-[15px] text-muted">
-          Studying with <span className="font-medium text-ink">{tutor.name}</span> · {tutor.subjects}
+          Studying with <span className="font-medium text-ink">{tutor.name}</span> · {tutor.subjects} ·{" "}
+          <button type="button" onClick={() => setPicking(true)} className="font-medium text-ink underline-offset-2 hover:underline">
+            Change tutor
+          </button>
         </p>
         <div className="mt-8 w-full">
-          <Composer onSend={start} autoFocus />
+          <Composer onSend={start} autoFocus placeholder={`Ask ${tutor.name} anything`} />
         </div>
-        <TutorPicker selected={tutor.id} />
       </div>
       <p className="py-3 text-center text-sm text-muted">{DISCLAIMER}</p>
-    </div>
-  );
-}
-
-function TutorPicker({ selected }: { selected: TutorId }) {
-  return (
-    <div className="mt-8 w-full">
-      <p className="mb-3 text-center text-sm text-muted">Choose your tutor</p>
-      <div role="radiogroup" aria-label="Tutor" className="flex flex-wrap justify-center gap-2">
-        {TUTORS.map((t) => {
-          const active = t.id === selected;
-          return (
-            <button
-              key={t.id}
-              type="button"
-              role="radio"
-              aria-checked={active}
-              title={`${t.role} — ${t.intro}`}
-              onClick={() => setPref("gt:tutor", t.id)}
-              className={`flex items-center gap-2 rounded-full border py-1 pr-3.5 pl-1 text-[15px] transition ${
-                active ? "border-transparent font-medium text-ink" : "border-line text-ink-soft hover:bg-hover"
-              }`}
-              style={active ? { backgroundColor: `${t.color}1f`, borderColor: t.color } : undefined}
-            >
-              <TutorAvatar tutor={t} size={28} />
-              {t.name}
-            </button>
-          );
-        })}
-      </div>
     </div>
   );
 }
@@ -180,6 +167,7 @@ function Conversation({ chat }: { chat: Chat }) {
 /** The tutor's full portrait beside the chat on wide screens; her mouth moves while she talks. */
 function TeachingStage({ tutor, talking, thinking }: { tutor: Tutor; talking: boolean; thinking: boolean }) {
   const portrait = tutor.portrait!;
+  const crop = portrait.stage ?? { x: 0, y: 0, w: portrait.width, h: portrait.height };
   return (
     <aside className="hidden w-85 shrink-0 flex-col justify-end gap-3 pr-6 pb-20 xl:flex" aria-hidden>
       <div className="relative w-full self-end">
@@ -192,10 +180,14 @@ function TeachingStage({ tutor, talking, thinking }: { tutor: Tutor; talking: bo
         </p>
         <div
           className="relative w-full overflow-hidden rounded-3xl border border-line shadow-sm"
-          style={{ aspectRatio: `${portrait.width} / ${portrait.height}`, borderColor: talking ? tutor.color : undefined }}
+          style={{
+            aspectRatio: `${crop.w} / ${crop.h}`,
+            borderColor: talking ? tutor.color : undefined,
+            background: `linear-gradient(180deg, ${tutor.color}14, ${tutor.color}33)`,
+          }}
         >
           <span className={`absolute inset-0 block ${talking ? "talk-bob" : ""}`}>
-            <PortraitView portrait={portrait} talking={talking} sizePx={340} />
+            <PortraitView portrait={portrait} crop={crop} talking={talking} sizePx={340} />
           </span>
         </div>
       </div>
@@ -317,7 +309,7 @@ function MissingChat() {
     <div className="flex flex-1 flex-col items-center justify-center gap-4 px-4 text-center">
       <p className="text-lg text-ink">This chat isn&apos;t in this browser.</p>
       <p className="max-w-md text-muted">Chats are saved only on the device where you had them.</p>
-      <button type="button" onClick={() => router.replace("/")} className="btn-primary h-11! w-auto! px-6 text-base!">
+      <button type="button" onClick={() => router.replace("/chat")} className="btn-primary h-11! w-auto! px-6 text-base!">
         Start a new chat
       </button>
     </div>
